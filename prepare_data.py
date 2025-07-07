@@ -3,13 +3,14 @@ import random
 from pathlib import Path
 from datasets import load_dataset, Dataset, DatasetDict
 
-MAX_WORDS = 80
+MAX_WORDS = 70
+MIN_CHARS = 3
 
 def clean_text(text: str) -> str:
     """
     Cleaning function to apply to all sentences in the dataset.
     """
-    text = text.strip("-:").strip()
+    text = text.strip("-:\n\t").strip()
     return text
 
 def _process_and_format_split(
@@ -40,6 +41,10 @@ def _process_and_format_split(
 
             # Skip instances where both sentences are the same
             if eng_sentence == fra_sentence:
+                continue
+
+            # Skip if either sentence is too short after cleaning
+            if len(eng_sentence) < MIN_CHARS or len(fra_sentence) < MIN_CHARS:
                 continue
 
             # Skip if word count difference is too large
@@ -121,7 +126,11 @@ def prepare_opus100_data(
         return
 
     print("\nProcessing validation split...")
-    validation_dataset = _process_and_format_split(full_dataset["validation"], max_length_diff)
+    validation_dataset = _process_and_format_split(
+        dataset_split=full_dataset["validation"],
+        max_length_diff=max_length_diff,
+        bidirectional=bidirectional,
+    )
     if validation_dataset:
         dataset_dict["validation"] = validation_dataset
         print(f"Created validation set with {len(validation_dataset)} pairs.")
@@ -129,7 +138,11 @@ def prepare_opus100_data(
         print("Validation set could not be created or is empty.")
 
     print("\nProcessing test split...")
-    test_dataset = _process_and_format_split(full_dataset["test"], max_length_diff)
+    test_dataset = _process_and_format_split(
+        dataset_split=full_dataset["test"],
+        max_length_diff=max_length_diff,
+        bidirectional=bidirectional,
+    )
     if test_dataset:
         dataset_dict["test"] = test_dataset
         print(f"Created test set with {len(test_dataset)} pairs.")
@@ -183,9 +196,3 @@ if __name__ == "__main__":
         max_length_diff=args.max_length_diff,
         bidirectional=args.bidirectional,
     )
-
-""" To clean:
-Sample 282148:
-  anchor:   "
-  positive: ".
-"""
