@@ -1,0 +1,11 @@
+.venv/
+.env
+.DS_Store
+
+models/
+data/
+wandb/
+
+NOTES.md
+
+tmp*
