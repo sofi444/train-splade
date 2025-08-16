@@ -10,7 +10,6 @@ from sentence_transformers import (
 from sentence_transformers.sparse_encoder.models import MLMTransformer, SpladePooling
 from sentence_transformers.sparse_encoder.losses import (
     SparseMultipleNegativesRankingLoss,
-    SparseCosineSimilarityLoss,
     SpladeLoss,
 )
 from datasets import load_from_disk, DatasetDict
@@ -95,9 +94,7 @@ def train_splade_model(
     ### --- Loss ---
     # The primary loss is a contrastive loss that learns to differentiate
     # between positive and in-batch negative pairs.
-    # primary_loss = SparseMultipleNegativesRankingLoss(model=model)
-    
-    primary_loss = SparseCosineSimilarityLoss(model=model)
+    primary_loss = SparseMultipleNegativesRankingLoss(model=model)
     
     # SpladeLoss wraps the primary loss and adds the L1 sparsity regularization term.
     # This is what makes the embeddings sparse.
